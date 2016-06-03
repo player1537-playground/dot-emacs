@@ -42,8 +42,10 @@
         mouse-wheel-progressive-speed nil ; no acceleration
         mouse-wheel-follow-mouse 't ; scroll window under mouse
         scroll-step 1 ; keyboard scroll one at a time
-        doc-view-ghostscript-program "/usr/local/bin/gs") ; DocView needs this
-  
+        doc-view-ghostscript-program "/usr/local/bin/gs" ; DocView needs this
+        doc-view-pdftotext-program "/usr/local/bin/pdftotext") ; And this
+
+
   (setq-default fill-column 80 	  ; Default fill column
 		indent-tabs-mode nil ; Use spaces instead of tabs
 		)
@@ -51,7 +53,7 @@
   (fset 'yes-or-no-p 'y-or-n-p)
   (put 'scroll-left 'disabled nil)
   (put 'scroll-right 'disabled nil)
-  
+
   (set-language-environment "UTF-8")) ; Use UTF-8 as preferred coding system
 
 ; Disabled useless modes
@@ -105,7 +107,7 @@
   (defun toggle-maximize-buffer () "Maximize buffer"
          (interactive)
          (if (= 1 (length (window-list)))
-             (jump-to-register '_) 
+             (jump-to-register '_)
            (progn
              (window-configuration-to-register '_)
              (delete-other-windows)))))
@@ -135,12 +137,12 @@
     (interactive)
     (move-frame-to-screen-right 0 (window-frame))
     (move-frame-to-screen-top 0 (window-frame))))
-    
+
 ;; frame- or window-resizing function
 ;; from http://dse.livejournal.com/67732.html. Resizes either frame or window
-;; to 80 columns. If the window can be sized to 80 columns wide, without 
-;; resizing the frame itself, it will resize the window. Otherwise, it will 
-;; resize the frame. You can use a prefix argument to specify a 
+;; to 80 columns. If the window can be sized to 80 columns wide, without
+;; resizing the frame itself, it will resize the window. Otherwise, it will
+;; resize the frame. You can use a prefix argument to specify a
 ;; different column width
 (progn
   (defun fix-frame-horizontal-size (width)
@@ -151,12 +153,12 @@
                          (+ (frame-width)
                             (- (or width (1+ fill-column)) (window-width))))
       (error "Cannot resize frame horizontally: is a text terminal")))
-  
+
   (defun fix-window-horizontal-size (width)
     "Set the window's size to 80 (or prefix arg WIDTH) columns wide."
     (interactive "P")
     (enlarge-window (- (or width (1+ fill-column)) (window-width)) 'horizontal))
-  
+
   (defun fix-horizontal-size (width)
     "Set the window's or frame's width to 80 (or prefix arg WIDTH)."
     (interactive "P")
@@ -177,7 +179,7 @@
     (setq doc-view-continuous t))
 
   (add-hook 'doc-view-mode-hook 'doc-view-add-keybindings))
-    
+
 ; Key bindings
 (progn
   (defvar custom-bindings-map (make-keymap))
@@ -190,7 +192,7 @@
     (lambda () (interactive) (scroll-left 1)))
   (define-key custom-bindings-map (kbd "M-v") 'yank)
   (define-key custom-bindings-map (kbd "M-c") 'kill-ring-save)
-  
+
   (define-minor-mode custom-bindings-mode
     "A mode that activates custom-bindings"
     t nil custom-bindings-map)
@@ -198,6 +200,6 @@
   (custom-bindings-mode 1))
 
 (progn
+  (set-frame-height (window-frame) 50)
   (fix-frame-size-and-position nil)
   (shell))
-
