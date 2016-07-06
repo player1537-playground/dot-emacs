@@ -117,8 +117,8 @@
 ; Setup web-mode
 (progn
   (require 'web-mode)
-  (add-to-list 'auto-mode-alist '("\\.html\\" . web-mode))
-  (add-to-list 'auto-mode-alist '("\\.vue\\" . web-mode))
+  (add-to-list 'auto-mode-alist '("\\.html\\'" . web-mode))
+  (add-to-list 'auto-mode-alist '("\\.vue\\'" . web-mode))
 
   (setq web-mode-markup-indent-offset 4
         web-mode-style-padding 0
@@ -238,10 +238,13 @@
 
 ; Open all files in current directory
 (progn
-  (defun open-all-files-in-directory ()
-    (interactive)
+  (defun open-all-files-in-directory (prefix)
+    (interactive "P")
+    (defun kill-file (fname)
+      (find-file fname)
+      (kill-this-buffer))
     (let ((command "git ls-tree -r --name-only HEAD | xargs /usr/local/bin/grealpath"))
-      (mapc 'find-file
+      (mapc (if prefix 'kill-file 'find-file)
             (split-string (eshell-command-result command))))))
 
 ; Key bindings
@@ -270,14 +273,3 @@
   (set-frame-height (window-frame) 50)
   (fix-frame-size nil)
   (shell))
-(custom-set-variables
- ;; custom-set-variables was added by Custom.
- ;; If you edit it by hand, you could mess it up, so be careful.
- ;; Your init file should contain only one such instance.
- ;; If there is more than one, they won't work right.
- '((custom-set-faces
- ;; custom-set-faces was added by Custom.
- ;; If you edit it by hand, you could mess it up, so be careful.
- ;; Your init file should contain only one such instance.
- ;; If there is more than one, they won't work right.
- )
