@@ -26,6 +26,10 @@
             markdown-mode         ; Markdown major mode
             markdown-mode+        ; More features for markdown-mode?
             web-mode              ; Better web-mode?
+            yasnippet             ; Snippets
+            emmet-mode            ; Easily insert HTML and CSS
+            auto-complete         ; Better auto-complete?
+            ox-gfm                ; Export github-flavored markdown
             ))
          (packages (remove-if 'package-installed-p packages)))
     (when packages
@@ -92,6 +96,11 @@
                                          ("function" . ?λ)))
   (set-face-attribute 'default nil :height 125))
 
+; Setup org-mode
+(progn
+  (setq org-export-backends '(html gfm)))
+
+
 ; Setup fill column indicator
 (progn
   (require 'fill-column-indicator)
@@ -101,6 +110,16 @@
              emacs-lisp-mode-hook
              python-mode-hook))
     (add-hook major-mode 'fci-mode)))
+
+; Setup yasnippet
+(progn
+  (when nil
+    (setq yas-snippet-dirs "~/src/dot-emacs/snippets/")
+    (define-key yas-minor-mode-map (kbd "<tab>") nil)
+    (define-key yas-minor-mode-map (kbd "TAB") nil)
+    (define-key yas-minor-mode-map (kbd "C-/") 'yas-expand)
+    (yas-reload-all)
+    (yas-global-mode)))
 
 ; Setup multi-web-mode
 (progn
@@ -114,20 +133,36 @@
         '("php" "htm" "html" "ctp" "phtml" "php4" "php5" "vue"))
   (multi-web-global-mode 0))
 
+; Setup emmet-mode
+(progn
+  (require 'emmet-mode)
+  (define-key emmet-mode-keymap (kbd "M-n") 'emmet-next-edit-point)
+  (define-key emmet-mode-keymap (kbd "M-p") 'emmet-prev-edit-point))
+
 ; Setup web-mode
 (progn
   (require 'web-mode)
+  (require 'auto-complete)
+  (add-hook 'web-mode-hook 'emmet-mode)
+
   (add-to-list 'auto-mode-alist '("\\.html\\'" . web-mode))
   (add-to-list 'auto-mode-alist '("\\.vue\\'" . web-mode))
+  (add-to-list 'auto-mode-alist '("\\.js\\'" . web-mode))
 
-  (setq web-mode-markup-indent-offset 4
+  (setq web-mode-markup-indent-offset 2
         web-mode-style-padding 0
         web-mode-script-padding 0
         web-mode-block-padding 0
-        web-mode-code-indent-offset 4
+        web-mode-code-indent-offset 2
         web-mode-enable-control-block-indentation nil
         web-mode-enable-whitespace-fontification nil
         )
+
+  (setq web-mode-extra-snippets
+        '(("none" . (("mod" . "<script>\nmodule(function(exports, {|}) {\n});\n</script>\n")
+                     ("vue" . "<script type=\"text/html\" id=\"|\">\n</script>\n")))
+
+          ))
 
   (add-to-list 'web-mode-indentation-params '("lineup-calls" . nil)))
 
@@ -158,6 +193,12 @@
 ; Setup pabbrev-mode
 (progn
   (setq pabbrev-idle-timer-verbose nil))
+
+; Setup markdown-mode
+(progn
+  (require 'markdown-mode)
+  (setq markdown-command "/usr/local/bin/node node_modules/.bin/marked"))
+
 
 ; Toggle maximize buffer
 (progn
