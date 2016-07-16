@@ -311,6 +311,7 @@
   (custom-bindings-mode 1))
 
 (progn
-  (set-frame-height (window-frame) 50)
-  (fix-frame-size nil)
+  (when (memq window-system '(mac ns))
+    (set-frame-height (window-frame) 50)
+    (fix-frame-size nil))
   (shell))
