@@ -30,6 +30,7 @@
             emmet-mode            ; Easily insert HTML and CSS
             auto-complete         ; Better auto-complete?
             ox-gfm                ; Export github-flavored markdown
+            yaml-mode             ; Edit YAML configuration files
             ))
          (packages (remove-if 'package-installed-p packages)))
     (when packages
@@ -66,6 +67,8 @@
   (fset 'yes-or-no-p 'y-or-n-p)
   (put 'scroll-left 'disabled nil)
   (put 'scroll-right 'disabled nil)
+  (put 'upcase-region 'disabled nil)
+  (put 'downcase-region 'disabled nil)
 
   (add-to-list 'auto-mode-alist '("\\.js\\'" . js2-mode))
 
@@ -137,7 +140,13 @@
 (progn
   (require 'emmet-mode)
   (define-key emmet-mode-keymap (kbd "M-n") 'emmet-next-edit-point)
-  (define-key emmet-mode-keymap (kbd "M-p") 'emmet-prev-edit-point))
+  (define-key emmet-mode-keymap (kbd "M-p") 'emmet-prev-edit-point)
+
+  (defun emmet-name (input)
+    "Parse a class or identifier name, e.g. news, footer, mainimage"
+    (emmet-parse "\\([a-zA-Z$@:][a-zA-Z0-9$@_:-]*\\)" 2 "class or identifer name"
+                 `((name . ,(emmet-split-numbering-expressions
+                             (elt it 1))) . ,input))))
 
 ; Setup web-mode
 (progn
@@ -150,6 +159,7 @@
   (add-to-list 'auto-mode-alist '("\\.js\\'" . web-mode))
 
   (setq web-mode-markup-indent-offset 2
+        web-mode-css-indent-offset 2
         web-mode-style-padding 0
         web-mode-script-padding 0
         web-mode-block-padding 0
@@ -300,7 +310,7 @@
     (lambda () (interactive) (scroll-left 1)))
   (define-key custom-bindings-map (kbd "M-v") 'yank)
   (define-key custom-bindings-map (kbd "M-c") 'kill-ring-save)
-  (define-key custom-bindings-map (kbd "C-x C-l") 'helm-lobsters)
+  (define-key custom-bindings-map (kbd "C-x l") 'helm-lobsters)
   (define-key custom-bindings-map (kbd "C-x <C-return>") 'vline-mode)
   (define-key custom-bindings-map (kbd "C-x C-\\") 'open-all-files-in-directory)
 
