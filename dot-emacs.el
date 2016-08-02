@@ -86,7 +86,8 @@
            column-number-mode	  ; Show column number in mode line
            global-prettify-symbols-mode ; Make greek letters look nice
            show-paren-mode		; Highlight matching parentheses
-           global-pabbrev-mode))	; Enable pabbrev mode
+           global-pabbrev-mode	; Enable pabbrev mode
+           global-auto-revert-mode))    ; Revert files when they change
   (funcall mode 1))
 
 ; Prettify
@@ -99,10 +100,46 @@
                                          ("function" . ?λ)))
   (set-face-attribute 'default nil :height 125))
 
+; Docker stuff
+(progn
+  (add-to-list 'auto-mode-alist '("\\Dockerfile\\'" . sh-mode)))
+
+; Setup sh-mode
+(progn
+  (defun disable-here-mode-completion ()
+    (sh-electric-here-document-mode -1))
+
+  (add-hook 'sh-mode-hook #'disable-here-mode-completion))
+
 ; Setup org-mode
 (progn
-  (setq org-export-backends '(html gfm)))
+  (setq org-export-backends '(html gfm))
+  (org-babel-do-load-languages
+   'org-babel-load-languages
+   '((sh . t)))
 
+  (defun org-add-ids-to-all ()
+    (org-map-entries 'org-id-get-create))
+
+  (defun my-org-mode-hook ()
+    (add-hook 'before-save-hook #'org-add-ids-to-all)
+    (auto-fill-mode)
+    (setq org-log-into-drawer t))
+
+  (add-hook 'org-mode-hook #'my-org-mode-hook)
+
+  (defun org-hide-etc ()
+    (interactive)
+    (save-excursion
+      (org-cycle '(64))                   ; show everything including drawers
+      (org-hide-block-all)                ; hide code blocks
+      (org-map-entries #'(lambda () (org-cycle-hide-drawers t))) ; hide drawers
+      (goto-char (point-min))                               ; goto top
+      (while (re-search-forward "^ +- http" nil t)          ; search for lists
+        (org-cycle))))                                       ; collapse list
+
+(progn
+  (define-key artist-mode-map (kbd "<down-mouse-3>") #'artist-mouse-choose-operation))
 
 ; Setup fill column indicator
 (progn
@@ -207,7 +244,18 @@
 ; Setup markdown-mode
 (progn
   (require 'markdown-mode)
-  (setq markdown-command "/usr/local/bin/node node_modules/.bin/marked"))
+  (setq markdown-command "/usr/local/bin/node node_modules/.bin/marked")
+  (defun markdown-fix-paragraphs ()
+    (setq paragraph-start (concat "\f"
+                                  "\\|[ \t]*$"
+                                  "\\|[ \t]*[-+*] +.+$"
+                                  "\\|```.*$"
+                                  "\\|\\$.*$")
+          paragraph-separate (concat "[ \t\f]*$"
+                                     "\\|\\$.*$")))
+
+
+  (add-hook 'markdown-mode-hook #'markdown-fix-paragraphs))
 
 
 ; Toggle maximize buffer
