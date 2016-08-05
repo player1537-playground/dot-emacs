@@ -31,6 +31,7 @@
             auto-complete         ; Better auto-complete?
             ox-gfm                ; Export github-flavored markdown
             yaml-mode             ; Edit YAML configuration files
+            ledger-mode           ; Keep track of finances
             ))
          (packages (remove-if 'package-installed-p packages)))
     (when packages
@@ -116,7 +117,8 @@
   (setq org-export-backends '(html gfm))
   (org-babel-do-load-languages
    'org-babel-load-languages
-   '((sh . t)))
+   '((sh . t)
+     (ledger . t)))
 
   (defun org-add-ids-to-all ()
     (org-map-entries 'org-id-get-create))
@@ -138,7 +140,105 @@
       (while (re-search-forward "^ +- http" nil t)          ; search for lists
         (org-cycle))))                                       ; collapse list
 
+  (defun org-show-next-heading-tidily ()
+    "Show next entry, keeping other entries closed."
+    (interactive)
+    (if (save-excursion (end-of-line) (outline-invisible-p))
+        (progn (org-show-entry) (show-children))
+      (outline-next-heading)
+      (unless (and (bolp) (org-on-heading-p))
+        (org-up-heading-safe)
+        (hide-subtree)
+        (error "Boundary reached"))
+      (org-overview)
+      (org-reveal t)
+      (org-show-entry)
+      (show-children)
+      (recenter-top-bottom 0)))
+
+  (defun org-show-previous-heading-tidily ()
+    "Show previous entry, keeping other entries closed."
+    (interactive)
+    (let ((pos (point)))
+      (outline-previous-heading)
+      (unless (and (< (point) pos) (bolp) (org-on-heading-p))
+        (goto-char pos)
+        (hide-subtree)
+        (error "Boundary reached"))
+      (org-overview)
+      (org-reveal t)
+      (org-show-entry)
+      (show-children)
+      (recenter-top-bottom 0)))
+
+  (define-key org-mode-map (kbd "M-p") #'org-show-previous-heading-tidily)
+  (define-key org-mode-map (kbd "M-n") #'org-show-next-heading-tidily)
+
+  (defun www-get-page-title (url)
+    (with-current-buffer (url-retrieve-synchronously url)
+      (goto-char (point-min))
+      (re-search-forward "<title>\\([^<]*\\)</title>" nil t 1)
+      (match-string 1)))
+
+  (defun my-org-get-link ()
+    "Insert org link where default description is set to html title."
+    (interactive)
+    (let* ((url (read-string "URL: "))
+           (title (www-get-page-title url)))
+      (concat "[[" url "][" title "]]")))
+
+  (setq org-directory "~/Dropbox/orgzly"
+        org-default-notes-file (concat org-directory "/unfiled.org")
+        org-capture-templates
+        '(("r" "Reference" entry (file org-default-notes-file)
+           "* %^{Name} %^G
+  :PROPERTIES:
+  :CREATED: %T
+  :LINK: %(my-org-get-link)
+  :END:
+
+%?
+")))
+
+  (setq org-agenda-files (file-expand-wildcards (concat org-directory "/*.org"))
+        org-refile-targets '((nil :maxlevel . 3)
+                             (org-agenda-files :maxlevel . 3)))
+
+
+  )
+
+; Setup ledger-mode
 (progn
+  (setq ledger-binary-path "/usr/local/bin/ledger"
+        ledger-use-iso-dates t)
+
+  (defun my-ledger-hook ()
+    (pabbrev-mode -1))
+
+  (add-hook 'ledger-mode-hook #'my-ledger-hook)
+
+  (defun org-babel-execute:ledger (body params)
+    "Execute a block of Ledger entries with org-babel.  This function is
+called by `org-babel-execute-src-block'."
+    (message "executing Ledger source code block")
+    (let ((result-params (split-string (or (cdr (assoc :results params)) "")))
+          (cmdline (cdr (assoc :cmdline params)))
+          (in-file (org-babel-temp-file "ledger-"))
+          (out-file (org-babel-temp-file "ledger-output-")))
+      (with-temp-file in-file (insert body))
+      (message "%s" (concat (or ledger-binary-path "ledger")
+                            " -f " (org-babel-process-file-name in-file)
+                            " " cmdline))
+      (with-output-to-string
+        (shell-command (concat (or ledger-binary-path "ledger")
+                               " -f " (org-babel-process-file-name in-file)
+                               " " cmdline
+                               " > " (org-babel-process-file-name out-file))))
+      (with-temp-buffer (insert-file-contents out-file) (buffer-string)))))
+
+; Setup artist-mode
+(progn
+  (require 'artist)
   (define-key artist-mode-map (kbd "<down-mouse-3>") #'artist-mouse-choose-operation))
 
 ; Setup fill column indicator
@@ -361,6 +461,7 @@
   (define-key custom-bindings-map (kbd "C-x l") 'helm-lobsters)
   (define-key custom-bindings-map (kbd "C-x <C-return>") 'vline-mode)
   (define-key custom-bindings-map (kbd "C-x C-\\") 'open-all-files-in-directory)
+  (define-key custom-bindings-map (kbd "C-c c") #'org-capture)
 
   (define-minor-mode custom-bindings-mode
     "A mode that activates custom-bindings"
