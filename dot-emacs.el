@@ -154,6 +154,7 @@
       (org-reveal t)
       (org-show-entry)
       (show-children)
+      (show-subtree)
       (recenter-top-bottom 0)))
 
   (defun org-show-previous-heading-tidily ()
@@ -169,6 +170,7 @@
       (org-reveal t)
       (org-show-entry)
       (show-children)
+      (show-subtree)
       (recenter-top-bottom 0)))
 
   (define-key org-mode-map (kbd "M-p") #'org-show-previous-heading-tidily)
