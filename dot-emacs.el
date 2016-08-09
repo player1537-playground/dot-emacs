@@ -762,8 +762,8 @@ this ID property, that entry is also checked."
         org-directory "~/Dropbox/orgzly"
         org-default-notes-file (concat org-directory "/unfiled.org")
         org-agenda-files (file-expand-wildcards (concat org-directory "/*.org"))
-        org-refile-targets '((nil :maxlevel . 3)
-                             (org-agenda-files :maxlevel . 3))
+        org-refile-targets '((nil :maxlevel . 9)
+                             (org-agenda-files :maxlevel . 1))
         org-capture-templates '(("r" "Reference" entry
                                  (file org-default-notes-file)
                                  "* %^{Name} %^G
