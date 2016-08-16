@@ -10,8 +10,7 @@
   (package-initialize)
 
   (let* ((packages
-          '(pabbrev		  ; Auto complete files with tab
-            org			  ; Create todo lists
+          '(org			  ; Create todo lists
             fill-column-indicator ; Adds a column to show where 80 chars is
             smart-tabs-mode	  ; Use tabs and spaces correctly
             frame-cmds            ; Commands to work with frames
@@ -85,24 +84,15 @@
 ;; Enable used modes
 (progn
   (dolist (mode
-           '(pabbrev-mode		  ; Simple auto-completion
-             column-number-mode	  ; Show column number in mode line
+           '(column-number-mode	  ; Show column number in mode line
              global-prettify-symbols-mode ; Make greek letters look nice
              show-paren-mode		; Highlight matching parentheses
-             global-pabbrev-mode          ; Enable pabbrev mode
              global-auto-revert-mode      ; revert files when they change
-             workgroups-mode              ; use workspaces
              ))
     (funcall mode 1)))
 
 ; Prettify
 (progn
-  (setq-default prettify-symbols-alist '(("lambda" . ?λ)
-                                         ("delta" . ?Δ)
-                                         ("gamma" . ?Γ)
-                                         ("phi" . ?φ)
-                                         ("psi" . ?ψ)
-                                         ("function" . ?λ)))
   (set-face-attribute 'default nil :height 125))
 
 ; Docker stuff
@@ -121,6 +111,7 @@
   (require 's)
 
   (defun my/org-add-ids-to-all ()
+    (interactive)
     (org-map-entries 'org-id-get-create)
     (org-map-entries
      '(unless (org-entry-get nil "CUSTOM_ID")
@@ -128,6 +119,7 @@
 
   (defun my/org-mode-hook ()
     (add-hook 'before-save-hook #'my/org-add-ids-to-all nil t)
+    (add-hook 'before-save-hook #'my/org-all-entries-fix-tags nil t)
     (add-hook 'before-save-hook #'my/org-all-entries-sort-tags nil t)
     (add-hook 'before-save-hook #'my/org-fix-internal-link-description nil t)
     (auto-fill-mode)
@@ -218,7 +210,7 @@
                              (mapconcat
                               (lambda (match)
                                 (let* ((href (cadr match))
-                                       (title (caddr match))
+                                       (title (or (caddr match) href))
                                        (a-tag (s-lex-format "<a href=\"${href}\">${title}</a>")))
                                   a-tag))
                               matches
@@ -285,6 +277,10 @@
                      (lambda (tag) (or (cdr-safe (assoc tag lookup)) tag))
                      split)))
         (org-set-tags-to fixed))))
+
+  (defun my/org-all-entries-sort-tags ()
+    (interactive)
+    (org-map-entries #'my/org-entry-fix-tags))
 
   (defun my/org-fix-internal-link-description ()
     (interactive)
@@ -757,10 +753,14 @@ this ID property, that entry is also checked."
    '((sh . t)
      (ledger . t)))
 
+  (setq org-directory (cond ((eq system-type 'gnu/linux) "~/src/notes")
+                            (t "~/Dropbox/orgzly")))
+
   (setq org-html-format-drawer-function #'my/org-html-format-drawer-function
         org-export-backends '(html gfm)
-        org-directory "~/Dropbox/orgzly"
         org-default-notes-file (concat org-directory "/unfiled.org")
+        browse-url-browser-function #'browse-url-generic
+        browse-url-generic-program "x-www-browser"
         org-agenda-files (file-expand-wildcards (concat org-directory "/*.org"))
         org-refile-targets '((nil :maxlevel . 9)
                              (org-agenda-files :maxlevel . 1))
@@ -782,13 +782,10 @@ this ID property, that entry is also checked."
 
 ; Setup ledger-mode
 (progn
-  (setq ledger-binary-path "/usr/local/bin/ledger"
-        ledger-use-iso-dates t)
-
-  (defun my-ledger-hook ()
-    (pabbrev-mode -1))
-
-  (add-hook 'ledger-mode-hook #'my-ledger-hook)
+  (setq
+   ledger-binary-path (cond ((eq system-type 'gnu/linux) "/usr/bin/ledger")
+                            (t "/usr/local/bin/ledger"))
+   ledger-use-iso-dates t)
 
   (defun org-babel-execute:ledger (body params)
     "Execute a block of Ledger entries with org-babel.  This function is
@@ -910,9 +907,6 @@ called by `org-babel-execute-src-block'."
   (setq helm-dash-common-docsets
         '("JavaScript" "HTML" "jQuery" "Bootstrap 3" "CSS" "jQuery" "D3JS")))
 
-; Setup pabbrev-mode
-(progn
-  (setq pabbrev-idle-timer-verbose nil))
 
 ; Setup markdown-mode
 (progn
@@ -960,8 +954,7 @@ called by `org-babel-execute-src-block'."
           (set-process-window-size process (window-height) (window-width))))))
 
   (defun comint-fix-window-size-hook ()
-    (add-hook 'window-configuration-change-hook 'comint-fix-window-size nil t)
-    (pabbrev-mode -1))
+    (add-hook 'window-configuration-change-hook 'comint-fix-window-size nil t))
 
   (add-hook 'shell-mode-hook 'comint-fix-window-size-hook))
 
@@ -1040,6 +1033,8 @@ called by `org-babel-execute-src-block'."
   (define-key custom-bindings-map (kbd "C-x l") 'helm-lobsters)
   (define-key custom-bindings-map (kbd "C-x C-\\") 'open-all-files-in-directory)
   (define-key custom-bindings-map (kbd "C-c c") #'org-capture)
+  (unless (memq window-system '(mac ns))
+    (define-key custom-bindings-map (kbd "<deletechar>") #'backward-kill-word))
 
   (define-minor-mode custom-bindings-mode
     "A mode that activates custom-bindings"
