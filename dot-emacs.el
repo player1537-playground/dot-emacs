@@ -93,7 +93,7 @@
 
 ; Prettify
 (progn
-  (set-face-attribute 'default nil :height 125))
+  (set-face-attribute 'default nil :height 100))
 
 ; Docker stuff
 (progn
@@ -116,17 +116,6 @@
     (org-map-entries
      '(unless (org-entry-get nil "CUSTOM_ID")
         (org-entry-put nil "CUSTOM_ID" (org-id-get nil)))))
-
-  (defun my/org-mode-hook ()
-    (add-hook 'before-save-hook #'my/org-add-ids-to-all nil t)
-    (add-hook 'before-save-hook #'my/org-all-entries-fix-tags nil t)
-    (add-hook 'before-save-hook #'my/org-all-entries-sort-tags nil t)
-    (add-hook 'before-save-hook #'my/org-fix-internal-link-description nil t)
-    (auto-fill-mode)
-    (setq org-log-into-drawer t))
-
-  (add-hook 'org-mode-hook #'my/org-mode-hook)
-  (add-hook 'org-capture-after-finalize-hook #'org-save-all-org-buffers)
 
   (defun my/org-hide-etc ()
     (interactive)
@@ -153,7 +142,11 @@
       (org-show-entry)
       (show-children)
       (show-subtree)
-      (recenter-top-bottom 0)))
+      (recenter-top-bottom 0))
+    (let ((keymap (make-sparse-keymap)))
+      (define-key keymap (kbd "p") #'my/org-show-previous-heading-tidily)
+      (define-key keymap (kbd "n") #'my/org-show-next-heading-tidily)
+      (set-transient-map keymap t)))
 
   (defun my/org-show-previous-heading-tidily ()
     "Show previous entry, keeping other entries closed."
@@ -169,7 +162,11 @@
       (org-show-entry)
       (show-children)
       (show-subtree)
-      (recenter-top-bottom 0)))
+      (recenter-top-bottom 0))
+    (let ((keymap (make-sparse-keymap)))
+      (define-key keymap (kbd "p") #'my/org-show-previous-heading-tidily)
+      (define-key keymap (kbd "n") #'my/org-show-next-heading-tidily)
+      (set-transient-map keymap t)))
 
   (defun my/www-get-page-title (url)
     (with-current-buffer (url-retrieve-synchronously url)
@@ -278,7 +275,7 @@
                      split)))
         (org-set-tags-to fixed))))
 
-  (defun my/org-all-entries-sort-tags ()
+  (defun my/org-all-entries-fix-tags ()
     (interactive)
     (org-map-entries #'my/org-entry-fix-tags))
 
@@ -748,6 +745,17 @@ this ID property, that entry is also checked."
 
 ;;; org-depend.el ends here
 
+  (defun my/org-mode-hook ()
+    (add-hook 'before-save-hook #'my/org-add-ids-to-all nil t)
+    (add-hook 'before-save-hook #'my/org-all-entries-fix-tags nil t)
+    (add-hook 'before-save-hook #'my/org-all-entries-sort-tags nil t)
+    (add-hook 'before-save-hook #'my/org-fix-internal-link-description nil t)
+    (auto-fill-mode)
+    (setq org-log-into-drawer t))
+
+  (add-hook 'org-mode-hook #'my/org-mode-hook)
+  (add-hook 'org-capture-after-finalize-hook #'org-save-all-org-buffers)
+
   (org-babel-do-load-languages
    'org-babel-load-languages
    '((sh . t)
@@ -1033,6 +1041,7 @@ called by `org-babel-execute-src-block'."
   (define-key custom-bindings-map (kbd "C-x l") 'helm-lobsters)
   (define-key custom-bindings-map (kbd "C-x C-\\") 'open-all-files-in-directory)
   (define-key custom-bindings-map (kbd "C-c c") #'org-capture)
+  (define-key custom-bindings-map (kbd "C-c a") #'org-agenda)
   (unless (memq window-system '(mac ns))
     (define-key custom-bindings-map (kbd "<deletechar>") #'backward-kill-word))
 
@@ -1046,4 +1055,10 @@ called by `org-babel-execute-src-block'."
   (when (memq window-system '(mac ns))
     (set-frame-height (window-frame) 50)
     (fix-frame-size nil))
-  (shell))
+  (dolist (filename org-agenda-files)
+    (find-file filename))
+  (shell "*shell*<notes>")
+  (insert "make")
+  (comint-send-input)
+  (cd "~/")
+  (shell "*shell*"))
