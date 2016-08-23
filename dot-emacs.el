@@ -141,7 +141,6 @@
       (org-reveal t)
       (org-show-entry)
       (show-children)
-      (show-subtree)
       (recenter-top-bottom 0))
     (let ((keymap (make-sparse-keymap)))
       (define-key keymap (kbd "p") #'my/org-show-previous-heading-tidily)
@@ -161,7 +160,6 @@
       (org-reveal t)
       (org-show-entry)
       (show-children)
-      (show-subtree)
       (recenter-top-bottom 0))
     (let ((keymap (make-sparse-keymap)))
       (define-key keymap (kbd "p") #'my/org-show-previous-heading-tidily)
@@ -770,6 +768,7 @@ this ID property, that entry is also checked."
         browse-url-browser-function #'browse-url-generic
         browse-url-generic-program "x-www-browser"
         org-agenda-files (file-expand-wildcards (concat org-directory "/*.org"))
+        org-goto-auto-isearch nil
         org-refile-targets '((nil :maxlevel . 9)
                              (org-agenda-files :maxlevel . 1))
         org-capture-templates '(("r" "Reference" entry
