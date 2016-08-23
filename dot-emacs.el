@@ -93,7 +93,8 @@
 
 ; Prettify
 (progn
-  (set-face-attribute 'default nil :height 100))
+  (set-face-attribute 'default nil :height (cond ((eq system-type 'gnu/linux) 100)
+                                                 ((eq system-type 'darwin) 115))))
 
 ; Docker stuff
 (progn
@@ -762,6 +763,7 @@ this ID property, that entry is also checked."
      (ledger . t)))
 
   (setq org-directory (cond ((eq system-type 'gnu/linux) "~/src/notes")
+                            ((eq system-type 'darwin) "~/src/notes")
                             (t "~/Dropbox/orgzly")))
 
   (setq org-html-format-drawer-function #'my/org-html-format-drawer-function
