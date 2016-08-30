@@ -858,6 +858,9 @@ called by `org-babel-execute-src-block'."
   (define-key emmet-mode-keymap (kbd "M-n") 'emmet-next-edit-point)
   (define-key emmet-mode-keymap (kbd "M-p") 'emmet-prev-edit-point)
 
+  (defun emmet-merge-tag-props (default-table tag-props)
+    tag-props)
+
   (defun emmet-name (input)
     "Parse a class or identifier name, e.g. news, footer, mainimage"
     (emmet-parse "\\([a-zA-Z$@:][a-zA-Z0-9$@_:-]*\\)" 2 "class or identifer name"
