@@ -33,6 +33,7 @@
             ledger-mode           ; Keep track of finances
             s                     ; Helpful string functions
             writegood-mode        ; Minor mode to write English better
+            restclient            ; Make REST requests from Emacs
             ))
          (packages (remove-if 'package-installed-p packages)))
     (when packages
@@ -781,6 +782,8 @@ this ID property, that entry is also checked."
         org-agenda-files (file-expand-wildcards (concat org-directory "/*.org"))
         org-agenda-skip-scheduled-if-deadline-is-shown 'not-today
         org-agenda-skip-scheduled-if-done t
+        org-agenda-window-setup 'current-window
+        org-extend-today-until 6
         org-goto-auto-isearch nil
         org-refile-targets '((nil :maxlevel . 9)
                              (org-agenda-files :maxlevel . 1))
