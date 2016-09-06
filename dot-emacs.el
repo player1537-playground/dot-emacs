@@ -32,6 +32,7 @@
             yaml-mode             ; Edit YAML configuration files
             ledger-mode           ; Keep track of finances
             s                     ; Helpful string functions
+            writegood-mode        ; Minor mode to write English better
             ))
          (packages (remove-if 'package-installed-p packages)))
     (when packages
@@ -96,6 +97,13 @@
   (set-face-attribute 'default nil :height (cond ((eq system-type 'gnu/linux) 100)
                                                  ((eq system-type 'darwin) 115))))
 
+;; Setup writegood-mode
+(progn
+  (require 'writegood-mode)
+  (set-face-attribute 'writegood-weasels-face nil :strike-through t)
+  (set-face-attribute 'writegood-passive-voice-face nil :box t)
+  (set-face-attribute 'writegood-duplicates-face nil :inverse-video t))
+
 ; Docker stuff
 (progn
   (add-to-list 'auto-mode-alist '("\\Dockerfile\\'" . sh-mode)))
@@ -110,6 +118,7 @@
 ; Setup org-mode
 (progn
   (require 's)
+  (require 'org)
 
   (defun my/org-add-ids-to-all ()
     (interactive)
@@ -187,14 +196,13 @@
 
   (defun my/org-html-format-drawer-function (name content)
       (concat "<div class=\"drawer " (downcase name) "\">\n"
-              "<h6>" (capitalize name) "</h6>\n"
               (let* ((lines (s-split "\n" content t))
                      (props (mapcar (lambda (s) (s-split-up-to ": " s 1)) lines))
                      result)
                 (dolist (prop props result)
                   (let ((name (car prop))
                         (value (cadr prop)))
-                    (if (or (s-equals? name "LINK") (s-equals? name "BLOCKER"))
+                    (if (or (s-equals? name "LINK") (s-equals? name "LINK+") (s-equals? name "BLOCKER"))
                         (let* ((re (rx "[[" (group (+? anything)) "]"
                                        "[" (group (+? anything)) "]]"))
                                (matches (s-match-strings-all re value)))
@@ -208,20 +216,13 @@
                                 (let* ((href (cadr match))
                                        (title (or (caddr match) href))
                                        (a-tag (s-lex-format "<a href=\"${href}\">${title}</a>")))
-                                  a-tag))
+                                  (s-concat name ": " a-tag)))
                               matches
-                              "</li><li>")
-                             "<ul><li>"
-                             "</li></ul>"))))
-                      (setq result (s-concat result "<pre>" name ": " value "</pre>"))))))
+                              "")
+                             "<div>"
+                             "</div>"))))
+                      (setq result (s-concat result "<div>" name ": " value "</div>"))))))
               "\n</div>"))
-
-  (defun org-html-property-drawer (property-drawer contents info)
-      "Transcode a PROPERTY-DRAWER element from Org to HTML.
-  CONTENTS holds the contents of the drawer.  INFO is a plist
-  holding contextual information."
-      (and (org-string-nw-p contents)
-           (my/org-html-format-drawer-function "properties" contents)))
 
   (defun my/org-entry-sort-tags ()
     (interactive)
@@ -749,6 +750,14 @@ this ID property, that entry is also checked."
     (add-hook 'before-save-hook #'my/org-all-entries-fix-tags nil t)
     (add-hook 'before-save-hook #'my/org-all-entries-sort-tags nil t)
     (add-hook 'before-save-hook #'my/org-fix-internal-link-description nil t)
+
+    (defun org-html-property-drawer (property-drawer contents info)
+      "Transcode a PROPERTY-DRAWER element from Org to HTML.
+  CONTENTS holds the contents of the drawer.  INFO is a plist
+  holding contextual information."
+      (and (org-string-nw-p contents)
+           (my/org-html-format-drawer-function "properties" contents)))
+
     (auto-fill-mode)
     (setq org-log-into-drawer t))
 
@@ -770,6 +779,8 @@ this ID property, that entry is also checked."
         browse-url-browser-function #'browse-url-generic
         browse-url-generic-program "x-www-browser"
         org-agenda-files (file-expand-wildcards (concat org-directory "/*.org"))
+        org-agenda-skip-scheduled-if-deadline-is-shown 'not-today
+        org-agenda-skip-scheduled-if-done t
         org-goto-auto-isearch nil
         org-refile-targets '((nil :maxlevel . 9)
                              (org-agenda-files :maxlevel . 1))
