@@ -34,13 +34,16 @@
             s                     ; Helpful string functions
             writegood-mode        ; Minor mode to write English better
             restclient            ; Make REST requests from Emacs
+            fancy-narrow          ; Narrow a buffer but see the rest of the file
+            try                   ; Try out different emacs lisp files
+            magit                 ; Nice way to do work with git
             ))
          (packages (remove-if 'package-installed-p packages)))
     (when packages
       (ignore-errors (package-refresh-contents)
                      (mapcar 'package-install packages)))))
 
-; Fix defaults for Mac OS
+;; Fix defaults for Mac OS
 (when (memq window-system '(mac ns))
   (setq ns-pop-up-frames nil
         mac-option-modifier 'meta
@@ -1060,6 +1063,7 @@ called by `org-babel-execute-src-block'."
   (define-key custom-bindings-map (kbd "C-x C-\\") 'open-all-files-in-directory)
   (define-key custom-bindings-map (kbd "C-c c") #'org-capture)
   (define-key custom-bindings-map (kbd "C-c a") #'org-agenda)
+  (define-key custom-bindings-map (kbd "C-x g") #'magit-status)
   (unless (memq window-system '(mac ns))
     (define-key custom-bindings-map (kbd "<deletechar>") #'backward-kill-word))
 
@@ -1070,6 +1074,7 @@ called by `org-babel-execute-src-block'."
   (custom-bindings-mode 1))
 
 (progn
+  (server-start)
   (when (memq window-system '(mac ns))
     (set-frame-height (window-frame) 50)
     (fix-frame-size nil))
@@ -1080,3 +1085,4 @@ called by `org-babel-execute-src-block'."
   (comint-send-input)
   (cd "~/")
   (shell "*shell*"))
+(put 'narrow-to-region 'disabled nil)
