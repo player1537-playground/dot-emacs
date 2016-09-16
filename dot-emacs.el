@@ -1,8 +1,8 @@
-; Load Common Lisp standard library
+;; Load Common Lisp standard library
 (progn
   (require 'cl))
 
-; Install packages
+;; Install packages
 (progn
   (require 'package)
   (add-to-list 'package-archives '("org" . "http://orgmode.org/elpa/"))
@@ -52,7 +52,7 @@
   (when (boundp 'mac-pass-command-to-system)
     (setq mac-pass-command-to-system nil)))
 
-; Sane defaults
+;; Sane defaults
 (progn
   (setq inhibit-startup-message t ; Hide the startup message
         initial-scratch-message nil ; Empty scratch buffer
@@ -80,7 +80,7 @@
 
   (set-language-environment "UTF-8")) ; Use UTF-8 as preferred coding system
 
-; Disabled useless modes
+;; Disabled useless modes
 (dolist (mode
 	 '(tool-bar-mode 	  ; No toolbars
 	   scroll-bar-mode))	  ; No scroll bars
@@ -96,7 +96,7 @@
              ))
     (funcall mode 1)))
 
-; Prettify
+;; Prettify
 (progn
   (set-face-attribute 'default nil :height (cond ((eq system-type 'gnu/linux) 100)
                                                  ((eq system-type 'darwin) 115))))
@@ -108,18 +108,18 @@
   (set-face-attribute 'writegood-passive-voice-face nil :box t)
   (set-face-attribute 'writegood-duplicates-face nil :inverse-video t))
 
-; Docker stuff
+;; Docker stuff
 (progn
   (add-to-list 'auto-mode-alist '("\\Dockerfile\\'" . sh-mode)))
 
-; Setup sh-mode
+;; Setup sh-mode
 (progn
   (defun disable-here-mode-completion ()
     (sh-electric-here-document-mode -1))
 
   (add-hook 'sh-mode-hook #'disable-here-mode-completion))
 
-; Setup org-mode
+;; Setup org-mode
 (progn
   (require 's)
   (require 'org)
@@ -806,7 +806,7 @@ this ID property, that entry is also checked."
   (define-key org-mode-map (kbd "M-n") #'my/org-show-next-heading-tidily)
   )
 
-; Setup ledger-mode
+;; Setup ledger-mode
 (progn
   (setq
    ledger-binary-path (cond ((eq system-type 'gnu/linux) "/usr/bin/ledger")
@@ -832,12 +832,12 @@ called by `org-babel-execute-src-block'."
                                " > " (org-babel-process-file-name out-file))))
       (with-temp-buffer (insert-file-contents out-file) (buffer-string)))))
 
-; Setup artist-mode
+;; Setup artist-mode
 (progn
   (require 'artist)
   (define-key artist-mode-map (kbd "<down-mouse-3>") #'artist-mouse-choose-operation))
 
-; Setup fill column indicator
+;; Setup fill column indicator
 (progn
   (require 'fill-column-indicator)
   (setq fci-rule-column fill-column)
@@ -847,7 +847,7 @@ called by `org-babel-execute-src-block'."
              python-mode-hook))
     (add-hook major-mode 'fci-mode)))
 
-; Setup yasnippet
+;; Setup yasnippet
 (progn
   (when nil
     (setq yas-snippet-dirs "~/src/dot-emacs/snippets/")
@@ -857,7 +857,7 @@ called by `org-babel-execute-src-block'."
     (yas-reload-all)
     (yas-global-mode)))
 
-; Setup multi-web-mode
+;; Setup multi-web-mode
 (progn
   (setq mweb-default-major-mode 'html-mode)
   (setq mweb-tags
@@ -869,7 +869,7 @@ called by `org-babel-execute-src-block'."
         '("php" "htm" "html" "ctp" "phtml" "php4" "php5" "vue"))
   (multi-web-global-mode 0))
 
-; Setup emmet-mode
+;; Setup emmet-mode
 (progn
   (require 'emmet-mode)
   (define-key emmet-mode-keymap (kbd "M-n") 'emmet-next-edit-point)
@@ -884,7 +884,7 @@ called by `org-babel-execute-src-block'."
                  `((name . ,(emmet-split-numbering-expressions
                              (elt it 1))) . ,input))))
 
-; Setup web-mode
+;; Setup web-mode
 (progn
   (require 'web-mode)
   (require 'auto-complete)
@@ -913,7 +913,7 @@ called by `org-babel-execute-src-block'."
   (add-to-list 'web-mode-indentation-params '("lineup-calls" . nil)))
 
 
-; Setup js2-mode
+;; Setup js2-mode
 (progn
   (setq js2-basic-offset 2              ; I don't like deep indentations
         js2-bound-indent-p t            ; Bounce between indentations
@@ -922,7 +922,7 @@ called by `org-babel-execute-src-block'."
         js2-mode-indent-ignore-first-tab t   ; Ignore first tab if indented correctly
         js2-strict-trailing-comma-warning nil)) ; So annoying
 
-; Setup js-mode
+;; Setup js-mode
 (progn
   (setq js-indent-level 0
         js-curly-indent-offset 2
@@ -931,13 +931,13 @@ called by `org-babel-execute-src-block'."
         js-square-indent-offset 2
         js-switch-indent-offset 2))
 
-; Setup helm-dash
+;; Setup helm-dash
 (progn
   (setq helm-dash-common-docsets
         '("JavaScript" "HTML" "jQuery" "Bootstrap 3" "CSS" "jQuery" "D3JS")))
 
 
-; Setup markdown-mode
+;; Setup markdown-mode
 (progn
   (require 'markdown-mode)
   (setq markdown-command "/usr/local/bin/node node_modules/.bin/marked")
@@ -968,6 +968,10 @@ called by `org-babel-execute-src-block'."
       (window-configuration-to-register ?-)
       (when (get-register ?_)
         (jump-to-register ?_)))))
+
+;; Setup man pages
+(progn
+  (setq Man-notify-method 'pushy))
 
 ;; Remove trailing whitespace on save
 (progn
@@ -1035,7 +1039,7 @@ called by `org-babel-execute-src-block'."
 
   (add-hook 'doc-view-mode-hook 'doc-view-add-keybindings))
 
-; Open all files in current directory
+;; Open all files in current directory
 (progn
   (defun open-all-files-in-directory (prefix)
     (interactive "P")
@@ -1046,7 +1050,7 @@ called by `org-babel-execute-src-block'."
       (mapc (if prefix 'kill-file 'find-file)
             (split-string (eshell-command-result command))))))
 
-; Key bindings
+;; Key bindings
 (progn
   (defvar custom-bindings-map (make-keymap))
   (define-key custom-bindings-map (kbd "C-x RET") #'swap-window-configurations)
