@@ -37,6 +37,7 @@
             fancy-narrow          ; Narrow a buffer but see the rest of the file
             try                   ; Try out different emacs lisp files
             magit                 ; Nice way to do work with git
+            tao-theme             ; Pretty Emacs color theme
             ))
          (packages (remove-if 'package-installed-p packages)))
     (when packages
@@ -99,7 +100,8 @@
 ;; Prettify
 (progn
   (set-face-attribute 'default nil :height (cond ((eq system-type 'gnu/linux) 100)
-                                                 ((eq system-type 'darwin) 115))))
+                                                 ((eq system-type 'darwin) 115)))
+  (load-theme 'tao-yang t))
 
 ;; Setup writegood-mode
 (progn
