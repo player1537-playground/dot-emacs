@@ -979,7 +979,7 @@ called by `org-babel-execute-src-block'."
 (progn
   (add-hook 'before-save-hook 'delete-trailing-whitespace))
 
-;; Fix terminal size when window size changes
+;; Setup shell
 (progn
   (defun comint-fix-window-size ()
     "Change process window size."
@@ -991,7 +991,15 @@ called by `org-babel-execute-src-block'."
   (defun comint-fix-window-size-hook ()
     (add-hook 'window-configuration-change-hook 'comint-fix-window-size nil t))
 
-  (add-hook 'shell-mode-hook 'comint-fix-window-size-hook))
+  (add-hook 'shell-mode-hook 'comint-fix-window-size-hook)
+
+  (require 's)
+
+  (defun shell-remote (&optional host)
+    (interactive "sEnter a host: ")
+    (let ((default-directory (s-lex-format "/sshx:${host}:"))
+          (buffer-name (s-lex-format "*shell*<${host}>")))
+      (shell buffer-name))))
 
 (progn
   (defun fix-frame-position ()
