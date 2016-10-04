@@ -70,7 +70,7 @@
         tab-width 2)                ; I hate those big tabs, so wasteful
 
 
-  (setq-default fill-column 80 	  ; Default fill column
+  (setq-default fill-column 79 	  ; Default fill column
                 indent-tabs-mode nil) ; Use spaces instead of tabs
 
   (defun how-many-region (begin end regexp &optional interactive)
