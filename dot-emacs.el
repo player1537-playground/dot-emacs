@@ -128,6 +128,7 @@ Non-interactive arguments are Begin End Regexp"
   (setq bidi-paragraph-direction 'left-to-right)
   (set-face-attribute 'default nil :height (cond ((eq system-type 'gnu/linux) 100)
                                                  ((eq system-type 'darwin) 115)))
+  (setq tao-theme-use-height nil)
   (load-theme 'tao-yang t))
 
 ;; Setup writegood-mode
