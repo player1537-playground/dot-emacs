@@ -38,6 +38,7 @@
             try                   ; Try out different emacs lisp files
             magit                 ; Nice way to do work with git
             tao-theme             ; Pretty Emacs color theme
+            projectile            ; Legit project management system
             ))
          (packages (remove-if 'package-installed-p packages)))
     (when packages
@@ -109,6 +110,11 @@
   (set-face-attribute 'writegood-weasels-face nil :strike-through t)
   (set-face-attribute 'writegood-passive-voice-face nil :box t)
   (set-face-attribute 'writegood-duplicates-face nil :inverse-video t))
+
+;; Setup projectile
+(progn
+  (setq projectile-tags-command "/usr/local/bin/ctags -Re -f \"%s\" %s")
+  (projectile-global-mode))
 
 ;; Docker stuff
 (progn
