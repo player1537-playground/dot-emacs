@@ -1078,6 +1078,8 @@ called by `org-babel-execute-src-block'."
   (define-key custom-bindings-map (kbd "C-c c") #'org-capture)
   (define-key custom-bindings-map (kbd "C-c a") #'org-agenda)
   (define-key custom-bindings-map (kbd "C-x g") #'magit-status)
+  (define-key custom-bindings-map (kbd "C-c o") #'ff-find-other-file)
+  (define-key custom-bindings-map (kbd "C-c C-o") #'ff-find-other-file)
   (unless (memq window-system '(mac ns))
     (define-key custom-bindings-map (kbd "<deletechar>") #'backward-kill-word))
 
