@@ -7,6 +7,7 @@
   (require 'package)
   (add-to-list 'package-archives '("org" . "http://orgmode.org/elpa/"))
   (add-to-list 'package-archives '("melpa" . "http://melpa.org/packages/"))
+  (add-to-list 'package-archives '("marmalade" . "http://marmalade-repo.org/packages/"))
   (package-initialize)
 
   (let* ((packages
@@ -38,6 +39,7 @@
             try                   ; Try out different emacs lisp files
             magit                 ; Nice way to do work with git
             tao-theme             ; Pretty Emacs color theme
+            projectile            ; Legit project management system
             ))
          (packages (remove-if 'package-installed-p packages)))
     (when packages
@@ -68,8 +70,32 @@
         tab-width 2)                ; I hate those big tabs, so wasteful
 
 
-  (setq-default fill-column 80 	  ; Default fill column
+  (setq-default fill-column 79 	  ; Default fill column
                 indent-tabs-mode nil) ; Use spaces instead of tabs
+
+  (defun how-many-region (begin end regexp &optional interactive)
+    "Print number of non-trivial matches for REGEXP in region.
+Non-interactive arguments are Begin End Regexp"
+    (interactive "r\nsHow many matches for (regexp): \np")
+    (let ((count 0) opoint)
+      (save-excursion
+        (setq end (or end (point-max)))
+        (goto-char (or begin (point)))
+        (while (and (< (setq opoint (point)) end)
+                    (re-search-forward regexp end t))
+          (if (= opoint (point))
+              (forward-char 1)
+            (setq count (1+ count))))
+        (if interactive (message "%d occurrences" count))
+        count)))
+
+  (defun infer-indentation-style ()
+    ;; if our source file uses tabs, we use tabs, if spaces spaces, and if
+    ;; neither, we use the current indent-tabs-mode
+    (let ((space-count (how-many-region (point-min) (point-max) "^  "))
+          (tab-count (how-many-region (point-min) (point-max) "^\t")))
+      (if (> space-count tab-count) (setq indent-tabs-mode nil))
+      (if (> tab-count space-count) (setq indent-tabs-mode t))))
 
   (fset 'yes-or-no-p 'y-or-n-p)
   (put 'scroll-left 'disabled nil)
@@ -99,8 +125,10 @@
 
 ;; Prettify
 (progn
+  (setq bidi-paragraph-direction 'left-to-right)
   (set-face-attribute 'default nil :height (cond ((eq system-type 'gnu/linux) 100)
                                                  ((eq system-type 'darwin) 115)))
+  (setq tao-theme-use-height nil)
   (load-theme 'tao-yang t))
 
 ;; Setup writegood-mode
@@ -109,6 +137,11 @@
   (set-face-attribute 'writegood-weasels-face nil :strike-through t)
   (set-face-attribute 'writegood-passive-voice-face nil :box t)
   (set-face-attribute 'writegood-duplicates-face nil :inverse-video t))
+
+;; Setup projectile
+(progn
+  (setq projectile-tags-command "/usr/local/bin/ctags -Re -f \"%s\" %s")
+  (projectile-global-mode))
 
 ;; Docker stuff
 (progn
