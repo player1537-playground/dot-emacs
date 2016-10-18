@@ -28,7 +28,6 @@
             web-mode              ; Better web-mode?
             yasnippet             ; Snippets
             emmet-mode            ; Easily insert HTML and CSS
-            auto-complete         ; Better auto-complete?
             ox-gfm                ; Export github-flavored markdown
             yaml-mode             ; Edit YAML configuration files
             ledger-mode           ; Keep track of finances
@@ -40,6 +39,7 @@
             magit                 ; Nice way to do work with git
             tao-theme             ; Pretty Emacs color theme
             projectile            ; Legit project management system
+            company               ; Auto completion
             ))
          (packages (remove-if 'package-installed-p packages)))
     (when packages
@@ -122,6 +122,19 @@ Non-interactive arguments are Begin End Regexp"
              global-auto-revert-mode      ; revert files when they change
              ))
     (funcall mode 1)))
+
+;; Setup completion
+(progn
+  (require 'company)
+  (setq dabbrev-case-replace nil)
+  (add-to-list 'company-backends '(company-capf :with company-dabbrev))
+  (global-company-mode)
+
+  (defun my/dabbrev-dwim (&optional arg)
+    (interactive "*P")
+    (if (bound-and-true-p company-mode)
+        (company-complete)
+      (dabbrev-expand arg))))
 
 ;; Prettify
 (progn
@@ -922,7 +935,6 @@ called by `org-babel-execute-src-block'."
 ;; Setup web-mode
 (progn
   (require 'web-mode)
-  (require 'auto-complete)
   (add-hook 'web-mode-hook 'emmet-mode)
 
   (add-to-list 'auto-mode-alist '("\\.html\\'" . web-mode))
@@ -1024,7 +1036,11 @@ called by `org-babel-execute-src-block'."
   (defun comint-fix-window-size-hook ()
     (add-hook 'window-configuration-change-hook 'comint-fix-window-size nil t))
 
+  (defun my/comint-remove-company-mode ()
+    (company-mode 0))
+
   (add-hook 'shell-mode-hook 'comint-fix-window-size-hook)
+  (add-hook 'shell-mode-hook #'my/comint-remove-company-mode)
 
   (require 's)
 
@@ -1111,6 +1127,7 @@ called by `org-babel-execute-src-block'."
   (define-key custom-bindings-map (kbd "C-c c") #'org-capture)
   (define-key custom-bindings-map (kbd "C-c a") #'org-agenda)
   (define-key custom-bindings-map (kbd "C-x g") #'magit-status)
+  (define-key custom-bindings-map (kbd "M-/") #'my/dabbrev-dwim)
   (unless (memq window-system '(mac ns))
     (define-key custom-bindings-map (kbd "<deletechar>") #'backward-kill-word))
 
