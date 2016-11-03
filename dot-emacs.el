@@ -40,6 +40,7 @@
             tao-theme             ; Pretty Emacs color theme
             projectile            ; Legit project management system
             company               ; Auto completion
+            flx-ido               ; Fuzzy matching for ido
             ))
          (packages (remove-if 'package-installed-p packages)))
     (when packages
@@ -122,6 +123,14 @@ Non-interactive arguments are Begin End Regexp"
              global-auto-revert-mode      ; revert files when they change
              ))
     (funcall mode 1)))
+
+;; Setup flx-ido
+(progn
+  (require 'flx-ido)
+  (setq ido-enable-flex-matching t
+        ido-use-faces nil)
+
+  (flx-ido-mode))
 
 ;; Setup completion
 (progn
